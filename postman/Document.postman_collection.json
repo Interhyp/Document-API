@@ -1,0 +1,441 @@
+{
+	"info": {
+		"_postman_id": "33a46e61-bc4b-4d73-99cd-9fcc094b6f19",
+		"name": "Document",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(pm.info.requestName, () => {",
+							"    pm.response.to.not.be.error;",
+							"    pm.response.to.not.have.jsonBody('error');",
+							"});",
+							"pm.environment.set(\"bearerToken\", pm.response.json().access_token);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{clientID}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{clientSecret}}",
+							"type": "text"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{Authorization-Baselink}}/protocol/openid-connect/token",
+					"host": [
+						"{{Authorization-Baselink}}"
+					],
+					"path": [
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - getDocuments",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/{{intentId}}",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"{{intentId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - completeDocument",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/{{documentId}}/complete?value=true",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"{{documentId}}",
+						"complete"
+					],
+					"query": [
+						{
+							"key": "value",
+							"value": "true"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - requestForDocument",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(pm.info.requestName, () => {\r",
+							"    pm.response.to.not.be.error;\r",
+							"    pm.response.to.not.have.jsonBody('error');\r",
+							"});\r",
+							"pm.environment.set(\"requestId\", pm.response.json().requestId);"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/{{documentId}}/export",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"{{documentId}}",
+						"export"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - getRequestedFile",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/{{requestId}}/request",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"{{requestId}}",
+						"request"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - prepareUpload",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(pm.info.requestName, () => {\r",
+							"    pm.response.to.not.be.error;\r",
+							"    pm.response.to.not.have.jsonBody('error');\r",
+							"});\r",
+							"pm.environment.set(\"mediumId\", pm.response.json().mediumId);"
+						]
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"totalParts\": 1,\r\n    \"totalFileSizeInBytes\": 40060,\r\n    \"mimeType\": \"application/pdf\",\r\n    \"fileName\": \"test.pdf\",\r\n    \"mediumInfo\": {\r\n        \"forDocumentId\": \"{{documentId}}\",\r\n        \"uploader\": \"example-partner\"\r\n    },\r\n    \"pageCount\": 2\r\n}"
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/{{intentId}}/upload",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"{{intentId}}",
+						"upload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - uploadChunk",
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "chunk",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/upload/{{mediumId}}/chunk/0",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"upload",
+						"{{mediumId}}",
+						"chunk",
+						"0"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - getUploadStatus",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/upload/{{mediumId}}/status",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"upload",
+						"{{mediumId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Document - getTypes",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{bearerToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "{{Gateway-BaseLink}}/document/v1/types",
+					"host": [
+						"{{Gateway-BaseLink}}"
+					],
+					"path": [
+						"document",
+						"v1",
+						"types"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

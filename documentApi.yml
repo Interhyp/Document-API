@@ -1,0 +1,883 @@
+openapi: 3.0.2
+info:
+  title: Document
+  version: '1.1.0'
+  description: |-
+    Diese API befindet sich momentan in einer Pilotphase. Sie wird zeitnah für alle Partner zur Verfügung stehen.
+
+    Mit dieser API erhalten Sie die Möglichkeit, Dokumente für Ihre Anträge zu importieren und exportieren.
+    Weitere Dateien (z.B. Postman Collections) finden Sie auf
+    <a href="https://github.com/Interhyp/Document-API" target="_blank">GitHub</a>.
+  contact:
+    name: Prohyp GmbH / Accountmanagement
+    url: https://www.prohyp.de
+    email: AM@prohyp.de
+
+servers:
+  - url: https://api.prohyp.de/document/v1
+    description: Production
+  - url: https://api-test.prohyp.de/document/v1
+    description: Test
+
+paths:
+  /{intentId}:
+    get:
+      tags:
+        - Document
+      summary: Unterlagenliste
+      operationId: get-doc-list
+      description: |-
+        Mit diesem Endpunkt erhalten Sie die Standardunterlagenliste oder eine Liste
+        der notwendigen Unterlagen für ein bestimmtes Angebot eines Antrags.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: bidId
+          in: query
+          description: |-
+            Angebots-ID
+
+            * Aufruf ohne Angebots-ID: Rückgabe der Standardunterlagenliste
+            * Aufruf mit Angebots-ID: Rückgabe benötigter Unterlagen des im Angebot ausgewählten Providers
+          schema:
+            type: integer
+            format: int64
+          example: 123456789
+        - name: intentId
+          in: path
+          description: Antrags-ID
+          required: true
+          schema:
+            type: string
+          example: 987654321
+      responses:
+        200:
+          description: Erfolgreicher Aufruf mit der Unterlagenliste als Ergebnis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Document'
+        400:
+          description: Antrags-ID ungültig
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        404:
+          description: Angebots-ID nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /{documentId}/complete:
+    put:
+      tags:
+        - Document
+      summary: Unterlagenprüfung
+      operationId: complete-document
+      description: |-
+        Mit diesem Endpunkt können Sie eine bestimmte Unterlage
+        als geprüft markieren oder diese wieder als ungeprüft setzen.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: documentId
+          in: path
+          description: Dokumenten-ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 123451234
+        - name: bidId
+          in: query
+          description: Angebots-ID
+          schema:
+            type: integer
+            format: int64
+          example: 123456789
+        - name: value
+          in: query
+          description: Geprüft-Flag
+          required: true
+          schema:
+            type: boolean
+          example: true
+      responses:
+        204:
+          description: Markierung zur Unterlage wurde erfolgreich gesetzt
+        400:
+          description: Ungültiges Dokument
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /{documentId}/export:
+    put:
+      tags:
+        - Document
+      summary: Anfrage Unterlagenabruf
+      operationId: request-for-document
+      description: |-
+        Mit diesem Endpunkt stellen Sie eine Anfrage für den Abruf einer bestimmten Unterlage.
+        Das Dokument wird nach dem Aufruf für den Download per "GET Unterlagenabruf" vorbereitet.
+        Je nach Größe der Datei kann dies einige Sekunden dauern.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: documentId
+          in: path
+          description: Dokumenten-ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 987654321
+      responses:
+        200:
+          description: Erfolgreicher Aufruf des Unterlagenabrufs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequestResult'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        422:
+          description: Abrufverarbeitung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /{requestId}/request:
+    get:
+      tags:
+        - Document
+      summary: Unterlagenabruf
+      operationId: get-requested-file
+      description: |-
+        Mit diesem Endpunkt können Sie die angeforderte Unterlage herunterladen.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: requestId
+          in: path
+          description: Abruf-ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 987654321
+      responses:
+        200:
+          description: Abruf erfolgreich
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+                example: |-
+                  %PDF-1.4
+                  1 0 obj
+                  <<
+                  /Title ...
+        202:
+          description: Abruf noch in Vorbereitung
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        404:
+          description: Abruf fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        422:
+          description: Dateiverarbeitung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /{intentId}/upload:
+    post:
+      tags:
+        - Document
+      summary: Anfrage Unterlagenupload
+      operationId: prepare-upload
+      description: |-
+        Mit diesem Endpunkt erstellen Sie eine Anfrage zum Hochladen
+        eines Dokumentes zu einer bestimmten Unterlage.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: intentId
+          in: path
+          description: Antrags-ID
+          required: true
+          schema:
+            type: string
+          example: 987654321
+      requestBody:
+        description: Metadaten für das Hochladen
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Upload'
+        required: true
+      responses:
+        201:
+          description: Hochladen erfolgreich vorbereitet
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        400:
+          description: Antrags-ID ungültig
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        404:
+          description: Antrag konnte nicht gefunden werden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /upload/{mediumId}/chunk/{partIndex}:
+    post:
+      tags:
+        - Document
+      summary: Dokumenten-Upload
+      operationId: upload-chunk
+      description: |-
+        Mit diesem Endpunkt laden Sie eine Datei für eine bestimmte Unterlage hoch.
+        Hierfür benötigen Sie eine Medium-Id. Der Upload kann in Chunks erfolgen, diese müssen
+        nicht chronologisch ausgeführt werden.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: mediumId
+          in: path
+          description: Medium-Id für das Hochladen
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 987
+        - name: partIndex
+          in: path
+          description: Index des Dateiblocks (beginnend bei 0)
+          required: true
+          schema:
+            type: integer
+            format: int32
+          example: 0
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                chunk:
+                  type: string
+                  format: binary
+            example: |-
+              Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+              --WebAppBoundary
+              Content-Disposition: form-data; name="chunk"; filename="filename.pdf"
+
+              < filename.pdf
+              --WebAppBoundary--
+        required: true
+      responses:
+        204:
+          description: Dateiblock erfolgreich gespeichert
+        400:
+          description: Medium nicht eindeutig
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        404:
+          description: Medium-Id nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        422:
+          description: Dateiblock ist fehlerhaft
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /upload/{mediumId}/status:
+    get:
+      tags:
+        - Document
+      summary: Status des Hochladens
+      operationId: get-upload-status
+      description: |-
+        Mit diesem Endpunkt erhalten Sie den Status des Hochladens
+        des Dokumentes für eine Medium-Id zurück.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+        - name: mediumId
+          in: path
+          description: Medium-Id für den Status des Hochladens
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 987
+      responses:
+        200:
+          description: Hochladen erfolgreich abgeschlossen
+        201:
+          description: Vorgang des Hochladens hat begonnen
+        204:
+          description: Vorgang des Hochladens ist in Bearbeitung
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        403:
+          description: Zugriff verweigert
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        404:
+          description: Medium nicht gefunden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        422:
+          description: Medium konnte aufgrund semantischer Fehler nicht verarbeitet werden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+        default:
+          description: Unerwarteter Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+  /types:
+    get:
+      tags:
+        - Document
+      summary: Unterlagentypen
+      operationId: get-types
+      description: |-
+        Mit diesem Endpunkt erhalten Sie alle verfügbaren Unterlagentypen.
+      parameters:
+        - name: Authorization
+          in: header
+          description: |-
+            Access Token im Bearer Format (siehe API "Authorization")
+            Beispiel:
+            Bearer xxx.yyy.zzz
+          schema:
+            type: string
+            pattern: '^Bearer .+$'
+      responses:
+        200:
+          description: Erfolgreicher Aufruf mit den Unterlagentypen als Ergebnis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Type'
+        401:
+          description: Authentifizierung fehlgeschlagen
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthProblem'
+        500:
+          description: Interner Server Fehler
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RFC7807Problem'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Document:
+      description: Informationen zu einer Unterlage
+      properties:
+        categoryInstance:
+          type: integer
+          format: int64
+          description: |-
+            Übergeordnete Kategorie dieser Instanz der Unterlage.
+
+            Es existieren folgende übergeordneten Kategorien:
+            * Allgemein (Wert null wird geliefert)
+            * Antragsteller (Wert 1 = Antragsteller 1, Wert 2 = Antragsteller 2)
+            * Objekt (Wert der Objekt-ID wird geliefert)
+          example: 1
+        complete:
+          type: boolean
+          description: Geprüft-Flag
+        documentId:
+          type: integer
+          format: int64
+          description: Dokumenten-ID
+          example: 123451234
+        irrelevant:
+          type: boolean
+          description: Markierung als nicht relevante Unterlage
+        note:
+          type: string
+          description: Hinweise zur Unterlage
+          example: 'Notiz zur Unterlage'
+        order:
+          type: integer
+          format: int64
+          description: Reihenfolge der Unterlage
+          example: 100099999
+        permissions:
+          $ref: '#/components/schemas/DocumentPermissions'
+        receptionDate:
+          description: Datum der initialen Zuordnung eines Dokumentes zu dieser Unterlage
+          type: string
+          example: '9.06.2021, 09:15'
+        receptionTypist:
+          type: string
+          description: Name des Benutzers der initialen Zuordnung eines Dokumentes zu dieser Unterlage
+          example: 'testbroker'
+        typeId:
+          type: integer
+          format: int64
+          description: |-
+            ID des Unterlagentyps
+
+            Siehe auch Endpunkt /types für weitere Informationen
+          example: 127
+        typeName:
+          type: string
+          description: |-
+            Name des Unterlagentyps
+
+            Siehe auch Endpunkt /types für weitere Informationen
+          example: 'WOHNFLAECHENBERECHNUNG'
+        validityDate:
+          type: string
+          description: Zeitangabe zu einer bestimmten Unterlage
+          example: 'Juni 2021'
+        verificationDate:
+          type: string
+          description: Datum der Unterlagenprüfung
+          example: '7.06.2021, 16:54'
+        verificationTypist:
+          type: string
+          description: Unterlagenprüfer
+          example: 'testbroker'
+        weight:
+          type: string
+          description:  >
+            Ausprägung der Unterlagennotwendigkeit:
+              * `mandatory` - verpflichtende Unterlage
+              * `existing` - Systemunterlage
+              * `required` - zusätzliche Unterlage
+          enum:
+            - mandatory
+            - existing
+            - required
+
+    DocumentPermissions:
+      description: Beschreibung der Unterlagenrechte
+      properties:
+        canComplete:
+          type: boolean
+          description: Unterlage kann als geprüft markiert werden
+        canDelete:
+          type: boolean
+          description: Unterlage kann gelöscht werden
+        canMarkAsIrrelevant:
+          type: boolean
+          description: Unterlage kann als nicht relevant markiert werden
+    MediumInformation:
+      description: Meta-Informationen der Datei
+      properties:
+        forDocumentId:
+          type: integer
+          format: int64
+          description: Dokumenten-ID, der das hochgeladene Dokument zugeordnet werden soll
+          example: 123451234
+        uploader:
+          type: string
+          description: Benutzer der das Dokument hochlädt
+          example: 'example-partner'
+    Upload:
+      description: Metadaten für das Hochladen
+      required: [mimeType, pageCount, totalParts, totalFileSizeInBytes]
+      properties:
+        mimeType:
+          type: string
+          description: |-
+            MIME-Type
+
+            Zulässige MIME-Types:
+            * application/pdf
+            * image/jpeg
+          example: 'application/pdf'
+        pageCount:
+          type: integer
+          format: int32
+          description: Anzahl der hochzuladenden Seiten
+          example: 1
+        totalParts:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Anzahl hochzuladender Dateiblöcke
+          example: 1
+        totalFileSizeInBytes:
+          type: integer
+          format: int32
+          description: Dateigröße in Byte
+          example: 350000
+        mediumInfo:
+          $ref: '#/components/schemas/MediumInformation'
+    UploadResponse:
+      description: Informationen für das Hochladen
+      properties:
+        mediumId:
+          type: integer
+          format: int64
+          description: Medium-Id
+          example: 987
+    UploadStatus:
+      description: Status für Medium-Id
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorInfo'
+        mediumId:
+          type: integer
+          format: int64
+          example: 987
+    RequestResult:
+      description: Beschreibung eines erfolgreichen Abrufs
+      properties:
+        requestId:
+          type: integer
+          format: int64
+          description: Abruf-Id
+          example: 987654321
+        documentId:
+          type: integer
+          format: int64
+          description: Dokumenten-Id
+          example: 123451234
+    Type:
+      description: Informationen zum Unterlagentyp
+      properties:
+        typeId:
+          type: integer
+          format: int64
+          description: ID des Unterlagentyps
+          example: 127
+        typeName:
+          type: string
+          description: Name des Unterlagentyps
+          example: 'WOHNFLAECHENBERECHNUNG'
+        category:
+          type: string
+          description: Unterlagenkategorie
+          example: 'OBJECT'
+        title:
+          type: string
+          description: Titel der Unterlage
+          example: 'Wohnflächenberechnung'
+        subtitle:
+          type: string
+          description: Untertitel der Unterlage
+          example: 'vom Architekten oder Bauträger erstellt und unterschrieben'
+    ErrorInfo:
+      description: Informationen zum Fehler beim Upload
+      properties:
+        traceId:
+          type: string
+        msg:
+          type: string
+        dateTime:
+          type: string
+          format: date-time
+        retryCount:
+          type: integer
+          format: int32
+    OAuthProblem:
+      description: Fehler bei der Authentifizierung
+      properties:
+        error:
+          type: string
+          description: Fehlermeldung
+          example: invalid_token
+        error_description:
+          type: string
+          description: Weitere Beschreibung des Fehlerbildes
+          example: Access token expired
+
+    RFC7807Problem:
+      description: Detaillierte Informationen zum Fehler
+      required: [timestamp, traceId, instance, title, status]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Fehlerzeitpunkt als UTC date-time
+        type:
+          type: string
+          format: uri
+          description: Weitere Informationen zum Fehler
+          default: 'about:blank'
+        title:
+          type: string
+          description: Fehlermeldung
+          example: Bad Request
+        status:
+          type: integer
+          format: int32
+          description: HTTP Status Code basierend auf folgenden Error Codes (https://tools.ietf.org/html/rfc2616#section-10)
+          example: 400
+          minimum: 100
+          maximum: 600
+          exclusiveMaximum: true
+        detail:
+          type: string
+          description: Weitere Beschreibung des Fehlerbildes
+          example: JSON parse error
+        traceId:
+          type: string
+          description: Trace Id des Requests
+          example: avx1234asd
+        instance:
+          type: string
+          format: uri
+          description: Aufrufpfad
+        violations:
+          type: array
+          description: Liste von Feldern mit fehlerhaftem Inhalt
+          items:
+            $ref: '#/components/schemas/Violation'
+    Violation:
+      description: Beschreibung eines fehlerhaften Feldwertes
+      properties:
+        field:
+          type: string
+          description: Name des Feldes
+          example: Upload.totalParts
+        message:
+          type: string
+          description: Beschreibung des Fehlers
+          example: must be greater than or equal to 1
+security:
+  - bearerAuth: []
