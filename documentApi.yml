@@ -1,7 +1,7 @@
 openapi: 3.0.2
 info:
   title: Document
-  version: '1.1.0'
+  version: 'v1.1.0'
   description: |-
     Diese API befindet sich momentan in einer Pilotphase. Sie wird zeitnah für alle Partner zur Verfügung stehen.
 
@@ -11,7 +11,7 @@ info:
   contact:
     name: Prohyp GmbH / Accountmanagement
     url: https://www.prohyp.de
-    email: AM@prohyp.de
+    email: am@prohyp.de
 
 servers:
   - url: https://api.prohyp.de/document/v1
@@ -646,12 +646,12 @@ components:
         permissions:
           $ref: '#/components/schemas/DocumentPermissions'
         receptionDate:
-          description: Datum der initialen Zuordnung eines Dokumentes zu dieser Unterlage
+          description: Datum der initialen Zuordnung von Seiten zu dieser Unterlage
           type: string
           example: '9.06.2021, 09:15'
         receptionTypist:
           type: string
-          description: Name des Benutzers der initialen Zuordnung eines Dokumentes zu dieser Unterlage
+          description: Name des Benutzers, der initial Seiten zu dieser Unterlage zugeordnet hat
           example: 'testbroker'
         typeId:
           type: integer
@@ -686,7 +686,7 @@ components:
             Ausprägung der Unterlagennotwendigkeit:
               * `mandatory` - verpflichtende Unterlage
               * `existing` - Systemunterlage
-              * `required` - zusätzliche Unterlage
+              * `required` - manuell hinzugefügte Unterlage
           enum:
             - mandatory
             - existing
