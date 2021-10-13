@@ -14,9 +14,9 @@ info:
     email: am@prohyp.de
 
 servers:
-  - url: https://api.prohyp.de/document/v1
+  - url: https://api.ehyphome.de/document/v1
     description: Production
-  - url: https://api-test.prohyp.de/document/v1
+  - url: https://api-test.ehyphome.de/document/v1
     description: Test
 
 paths:
