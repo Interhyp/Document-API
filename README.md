@@ -2,7 +2,7 @@
 ## Einleitung
 Mit dieser API erhalten Sie die Möglichkeit, Dokumente für Ihre Anträge zu importieren und exportieren.
 ## Möglichkeiten zur Nutzung
-[Developer Portal](https://interhyp.github.io/Developer-Portal/documentApi.html#tag/Document)
+[Developer Portal](https://developer.ehyphome.de/documentApi.html#tag/Document)
 ## Autoren
 * Interhyp AG
 ## Lizenz
